@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inamers Feed</title>
+    <style>
+      :root {
+  --bg: #0b0b10;
+  --panel: #121319;
+  --soft: rgba(255, 255, 255, 0.08);
+  --text: #f5f7ff;
+  --muted: rgba(255, 255, 255, 0.7);
+  --pink: #ff2d55;
+  --shadow: rgba(0, 0, 0, 0.46);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  background: radial-gradient(circle at top, #1d1d2a 0%, #0b0b10 38%, #07070b 100%);
+  color: var(--text);
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.page-shell {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.phone-frame {
+  position: relative;
+  width: min(420px, 100%);
+  height: min(92vh, 900px);
+  max-height: 900px;
+  background: #000;
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px 12px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  font-size: 1.15rem;
+}
+
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.tab {
+  opacity: 0.75;
+}
+
+.tab.active {
+  opacity: 1;
+  font-weight: 700;
+  color: #fff;
+}
+
+.search-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.feed {
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.feed::-webkit-scrollbar {
+  display: none;
+}
+
+.video-card {
+  position: relative;
+  height: 100%;
+  min-height: 100%;
+  scroll-snap-align: start;
+  background: #111;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  background: #000;
+  cursor: pointer;
+}
+
+.video-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.1) 42%, rgba(0,0,0,0.12));
+  pointer-events: none;
+}
+
+.video-info {
+  position: absolute;
+  left: 16px;
+  right: 86px;
+  bottom: 20px;
+  z-index: 2;
+}
+
+.user-line {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.caption {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.92);
+  max-width: 72%;
+}
+
+.action-stack {
+  position: absolute;
+  right: 12px;
+  bottom: 22px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  width: 62px;
+  min-height: 62px;
+  border-radius: 18px;
+  padding: 8px 4px;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.action-btn:hover,
+.action-btn:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.action-btn.liked {
+  background: rgba(255, 45, 85, 0.18);
+  box-shadow: 0 0 18px rgba(255, 45, 85, 0.24);
+}
+
+.action-btn.liked .icon {
+  color: var(--pink);
+  text-shadow: 0 0 16px rgba(255, 45, 85, 0.7);
+}
+
+.icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.comment-panel {
+  position: absolute;
+  left: 16px;
+  right: 90px;
+  bottom: 78px;
+  z-index: 4;
+  padding: 14px 14px 12px;
+  border-radius: 18px;
+  background: rgba(18, 19, 25, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.comment-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.comment-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.comment-panel-header h3 {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.close-comments {
+  border: none;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  color: white;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.comment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.88);
+}
+
+.comment-list li {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comment-form input {
+  flex: 1;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: white;
+  padding: 10px 12px;
+}
+
+.comment-form input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.comment-form button {
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff2d55, #ff7a59);
+  color: white;
+  font-weight: 700;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%) translateY(18px);
+  background: rgba(255,255,255,0.12);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  backdrop-filter: blur(12px);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 500px) {
+  .page-shell {
+    padding: 0;
+  }
+
+  .phone-frame {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="phone-frame">
+        <header class="top-bar">
+          <div class="brand">Pahindot</div>
+          <nav class="nav-tabs" aria-label="Main navigation">
+            <span class="tab active">Following</span>
+            <span class="tab">For You</span>
+          </nav>
+          <button class="search-btn" aria-label="Search">⌕</button>
+        </header>
+
+        <main class="feed" aria-label="Video feed">
+          <article class="video-card">
+            <video
+              class="video"
+              loop
+              playsinline
+              preload="auto"
+              poster="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
+            >
+              <source src="Ken3.mp4" type="video/mp4" />
+            </video>
+
+            <div class="video-info">
+              <div class="user-line">Yujaex</div>
+              <p class="caption">Gumala sa Bday</p>
+            </div>
+
+            <div class="comment-panel" aria-live="polite">
+              <div class="comment-panel-header">
+                <h3>Comments</h3>
+                <button class="close-comments" type="button" aria-label="Close comments">×</button>
+              </div>
+              <ul class="comment-list">
+                <li>San yan ya?</li>
+                <li>Happy Birthday po kuya ken!!😊❤️</li>
+                <li>Gago mukhang burat tanginamo</li>
+              </ul>
+              <form class="comment-form">
+                <input type="text" maxlength="80" placeholder="Add a comment..." aria-label="Add a comment" />
+                <button type="submit">Post</button>
+              </form>
+            </div>
+
+            <div class="action-stack" aria-label="Video actions">
+              <button class="action-btn heart-btn" type="button" data-liked="false">
+                <span class="icon">♡</span>
+                <span class="count" data-count="24800">6.3B</span>
+              </button>
+              <button class="action-btn comment-btn" type="button">
+                <span class="icon">💬</span>
+                <span class="count" data-count="1200">3</span>
+              </button>
+              <button class="action-btn share-btn" type="button">
+                <span class="icon">↗</span>
+                <span class="count">Share</span>
+              </button>
+            </div>
+          </article>
+
+          <article class="video-card">
+            <video
+              class="video"
+              loop
+              playsinline
+              preload="auto"
+              poster="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=900&q=80"
+            >
+              <source src="Ken2.mp4" type="video/mp4" />
+            </video>
+
+            <div class="video-info">
+              <div class="user-line">Yujaex</div>
+              <p class="caption">otw kahit saan</p>
+            </div>
+
+            <div class="comment-panel" aria-live="polite">
+              <div class="comment-panel-header">
+                <h3>Comments</h3>
+                <button class="close-comments" type="button" aria-label="Close comments">×</button>
+              </div>
+              <ul class="comment-list">
+                <li>That water looks unreal.</li>
+                <li>Would love this view.</li>
+                <li>Tanginamo Sabi mo iinom tayo</li>
+              </ul>
+              <form class="comment-form">
+                <input type="text" maxlength="80" placeholder="Add a comment..." aria-label="Add a comment" />
+                <button type="submit">Post</button>
+              </form>
+            </div>
+
+            <div class="action-stack" aria-label="Video actions">
+              <button class="action-btn heart-btn" type="button" data-liked="false">
+                <span class="icon">♡</span>
+                <span class="count" data-count="89000">89K</span>
+              </button>
+              <button class="action-btn comment-btn" type="button">
+                <span class="icon">💬</span>
+                <span class="count" data-count="4600">3</span>
+              </button>
+              <button class="action-btn share-btn" type="button">
+                <span class="icon">↗</span>
+                <span class="count">Share</span>
+              </button>
+            </div>
+          </article>
+
+          <article class="video-card">
+            <video
+              class="video"
+              loop
+              playsinline
+              preload="auto"
+              poster="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=900&q=80"
+            >
+              <source src="Ken.mp4" type="video/mp4" />
+            </video>
+
+            <div class="video-info">
+              <div class="user-line">Yujaex</div>
+              <p class="caption">W/ Karl</p>
+            </div>
+
+            <div class="comment-panel" aria-live="polite">
+              <div class="comment-panel-header">
+                <h3>Comments</h3>
+                <button class="close-comments" type="button" aria-label="Close comments">×</button>
+              </div>
+              <ul class="comment-list">
+                <li>Cheater sa Steal an Egg to e</li>
+                <li>Tanginamo baliw</li>
+                <li>Sex po tayo minsan</li>
+              </ul>
+              <form class="comment-form">
+                <input type="text" maxlength="80" placeholder="Add a comment..." aria-label="Add a comment" />
+                <button type="submit">Post</button>
+              </form>
+            </div>
+
+            <div class="action-stack" aria-label="Video actions">
+              <button class="action-btn heart-btn" type="button" data-liked="false">
+                <span class="icon">♡</span>
+                <span class="count" data-count="12500">12.5K</span>
+              </button>
+              <button class="action-btn comment-btn" type="button">
+                <span class="icon">💬</span>
+                <span class="count" data-count="870">3</span>
+              </button>
+              <button class="action-btn share-btn" type="button">
+                <span class="icon">↗</span>
+                <span class="count">Share</span>
+              </button>
+            </div>
+          </article>
+        </main>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" aria-live="assertive"></div>
+
+    <script>
+      const videos = document.querySelectorAll('.video');
+
+const formatCount = (value) => {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+  return String(value);
+};
+
+const updateCount = (element, value) => {
+  if (!element) return;
+  element.dataset.count = String(value);
+  element.textContent = formatCount(value);
+};
+
+const showToast = (message) => {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.add('show');
+
+  clearTimeout(showToast.timeoutId);
+  showToast.timeoutId = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 1500);
+};
+
+const playVisibleVideo = (video) => {
+  const rect = video.getBoundingClientRect();
+  const isVisible = rect.top < window.innerHeight * 0.9 && rect.bottom > window.innerHeight * 0.2;
+
+  if (isVisible) {
+    video.play().catch(() => {});
+  } else {
+    video.pause();
+  }
+};
+
+const addCommentInteractions = () => {
+  document.querySelectorAll('.video-card').forEach((card) => {
+    const heartButton = card.querySelector('.heart-btn');
+    const commentButton = card.querySelector('.comment-btn');
+    const shareButton = card.querySelector('.share-btn');
+    const commentPanel = card.querySelector('.comment-panel');
+    const closeButton = card.querySelector('.close-comments');
+    const commentForm = card.querySelector('.comment-form');
+    const commentList = card.querySelector('.comment-list');
+    const heartIcon = heartButton?.querySelector('.icon');
+    const heartCount = heartButton?.querySelector('.count');
+    const commentCount = commentButton?.querySelector('.count');
+
+    heartButton?.addEventListener('click', () => {
+      const isLiked = heartButton.dataset.liked === 'true';
+      const currentValue = Number(heartCount?.dataset.count || 0);
+      const nextValue = isLiked ? currentValue - 1 : currentValue + 1;
+
+      heartButton.dataset.liked = String(!isLiked);
+      heartButton.classList.toggle('liked', !isLiked);
+      heartIcon.textContent = !isLiked ? '♥' : '♡';
+      updateCount(heartCount, nextValue);
+    });
+
+    commentButton?.addEventListener('click', () => {
+      commentPanel?.classList.toggle('open');
+    });
+
+    closeButton?.addEventListener('click', () => {
+      commentPanel?.classList.remove('open');
+    });
+
+    commentForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const input = commentForm.querySelector('input');
+      const value = input.value.trim();
+
+      if (!value) return;
+
+      const newComment = document.createElement('li');
+      newComment.textContent = value;
+      commentList.prepend(newComment);
+      input.value = '';
+
+      if (commentCount) {
+        const currentValue = Number(commentCount.dataset.count || 0);
+        updateCount(commentCount, currentValue + 1);
+      }
+
+      showToast('Comment posted');
+    });
+
+    shareButton?.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(window.location.href);
+          showToast('Link copied');
+        } else {
+          showToast('Share ready');
+        }
+      } catch (error) {
+        showToast('Share ready');
+      }
+    });
+  });
+};
+
+const setUpVideoObserver = () => {
+  const options = {
+    root: null,
+    threshold: [0.45, 0.7, 1.0],
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const video = entry.target;
+
+      if (entry.isIntersecting) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, options);
+
+  videos.forEach((video) => {
+    observer.observe(video);
+
+    video.addEventListener('click', () => {
+      if (video.paused) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  });
+};
+
+window.addEventListener('load', () => {
+  videos.forEach((video) => {
+    video.muted = false;
+    video.volume = 1;
+    video.playsInline = true;
+    playVisibleVideo(video);
+  });
+
+  addCommentInteractions();
+  setUpVideoObserver();
+});
+
+window.addEventListener('scroll', () => {
+  videos.forEach((video) => playVisibleVideo(video));
+}, { passive: true });
+    </script>
+  </body>
+</html>
